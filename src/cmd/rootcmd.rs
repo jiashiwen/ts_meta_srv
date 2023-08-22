@@ -4,7 +4,7 @@ use crate::commons::SubCmd;
 use crate::configure::{generate_default_config, set_config_file_path};
 use crate::configure::{get_config, get_config_file_path, get_current_config_yml, set_config};
 
-use crate::resources::init_resources;
+use crate::{grpcserver::GrpcNodeServer, resources::init_resources};
 use crate::{httpserver, interact};
 use clap::{Arg, ArgAction, ArgMatches};
 use fork::{daemon, Fork};
@@ -19,6 +19,7 @@ use std::str::FromStr;
 use std::{env, fs, thread};
 use sysinfo::{Pid, ProcessExt, RefreshKind, System, SystemExt};
 use tokio::runtime::Runtime;
+use tokio::sync::Mutex;
 
 lazy_static! {
     static ref CLIAPP: clap::Command = clap::Command::new("serverframe-rs")
@@ -172,6 +173,22 @@ fn cmd_match(matches: &ArgMatches) {
             rt.block_on(async_http_server);
         });
 
+        let thread_rpc = thread::spawn(|| {
+            let rt = Runtime::new().unwrap();
+            rt.block_on(async {
+                let addr = "0.0.0.0:50051".parse().unwrap();
+
+                let server = GrpcNodeServer {
+                    shutdown_tx: Mutex::new(None),
+                    serve_state: Mutex::new(None),
+                };
+
+                let rs = server.start(addr).await.unwrap();
+
+                rs.await.unwrap();
+            });
+        });
+
         let thread_signale = thread::spawn(|| {
             // 添加signal处理机制
             let mut sigs = vec![];
@@ -194,6 +211,8 @@ fn cmd_match(matches: &ArgMatches) {
                 }
             }
         });
+
+        thread_rpc.join().unwrap();
         thread_http.join().unwrap();
         thread_signale.join().unwrap();
     }

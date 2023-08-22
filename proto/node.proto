@@ -1,0 +1,18 @@
+syntax = "proto3";
+package meta_service;
+option go_package = "meta";
+
+message AllNodesRequest {}
+
+message AllNodesResponse { repeated NodeInfo all_nodes = 1; }
+
+message NodeInfo {
+  uint64 id = 1;
+  string rpc_addr = 2;
+  string http_addr = 3;
+  uint32 status = 4;
+}
+
+service Node {
+  rpc AllNodesInfo(AllNodesRequest) returns (AllNodesResponse) {}
+}

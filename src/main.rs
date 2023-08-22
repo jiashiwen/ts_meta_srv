@@ -5,6 +5,7 @@ mod commons;
 mod configure;
 mod errors;
 // mod httpquerry;
+mod grpcserver;
 mod httpserver;
 mod interact;
 mod logger;
