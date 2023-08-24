@@ -18,3 +18,15 @@
 ## 测试与验证
 
 - [x] 测试替换asynconce 的方案，以及替代方案与rsa 兼容问题
+
+
+grpcurl -plaintext 127.0.0.1:50051 list
+
+
+grpcurl -plaintext -d '' 127.0.0.1:50051 meta_service.Node.AllNodesInfo
+
+
+git commit --amend --author="jiashiwen1 <jiashiwen@jd.com>" --no-edit
+
+
+ git reset --soft  a988bd1d788f229770e59612e9022d98ed2fb1a8
