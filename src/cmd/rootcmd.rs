@@ -22,10 +22,10 @@ use tokio::runtime::Runtime;
 use tokio::sync::Mutex;
 
 lazy_static! {
-    static ref CLIAPP: clap::Command = clap::Command::new("serverframe-rs")
+    static ref CLIAPP: clap::Command = clap::Command::new("ts_meta_srv")
         .version("1.0")
         .author("Shiwen Jia. <jiashiwen@gmail.com>")
-        .about("RustBoot")
+        .about("ts_meta_srv")
         .arg_required_else_help(true)
         .arg(
             Arg::new("config")

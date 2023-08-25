@@ -101,7 +101,7 @@ pub fn run() {
         println!("No previous history.");
     }
 
-    let p = format!("{}> ", "web-rs");
+    let p = format!("{}> ", "ts_meta_srv");
     rl.helper_mut().expect("No helper").colored_prompt = format!("\x1b[1;32m{}\x1b[0m", p);
 
     loop {
