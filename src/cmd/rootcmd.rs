@@ -12,7 +12,6 @@ use lazy_static::lazy_static;
 use signal_hook::consts::{SIGTERM, TERM_SIGNALS};
 use signal_hook::iterator::exfiltrator::WithOrigin;
 use signal_hook::iterator::SignalsInfo;
-use std::borrow::Borrow;
 use std::net::{self, IpAddr};
 use std::process::{exit, Command};
 use std::str::FromStr;
@@ -99,7 +98,7 @@ pub fn get_command_completer() -> CommandCompleter {
 
 fn subcommands() -> Vec<SubCmd> {
     let mut subcmds = vec![];
-    all_subcommand(&CLIAPP.clone().borrow(), 0, &mut subcmds);
+    all_subcommand(&CLIAPP, 0, &mut subcmds);
     subcmds
 }
 
@@ -184,7 +183,6 @@ fn cmd_match(matches: &ArgMatches) {
                 };
 
                 let rs = server.start(addr).await.unwrap();
-
                 rs.await.unwrap();
             });
         });
@@ -204,8 +202,6 @@ fn cmd_match(matches: &ArgMatches) {
                     }
                     term_sig => {
                         eprintln!("Terminating");
-                        // do some before exit
-
                         exit(0)
                     }
                 }

@@ -1,8 +1,10 @@
 use axum::Json;
 
-use crate::httpserver::{
-    exception::{AppError, AppErrorType},
-    module::{Response, KV},
+use crate::{
+    httpserver::{
+        exception::{AppError, AppErrorType},
+        module::{Response, KV},
+    },
     service::put,
 };
 

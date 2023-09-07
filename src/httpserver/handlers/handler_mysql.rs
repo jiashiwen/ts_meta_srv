@@ -1,8 +1,10 @@
 use axum::Json;
 
-use crate::httpserver::{
-    exception::{AppError, AppErrorType},
-    module::Response,
+use crate::{
+    httpserver::{
+        exception::{AppError, AppErrorType},
+        module::Response,
+    },
     service::insert_rbatis_t,
 };
 

@@ -8,7 +8,8 @@ use std::net::SocketAddr;
 use anyhow::Result;
 
 use futures::FutureExt;
-use pb::{AllNodesRequest, AllNodesResponse};
+use pb::{AllNodesRequest, AllNodesResponse, TestRequest, TestResponse};
+
 use tokio::{
     net::TcpListener,
     sync::{
@@ -85,7 +86,7 @@ pub struct NodeInfoServer {}
 impl pb::node_server::Node for NodeInfoServer {
     async fn all_nodes_info(
         &self,
-        request: tonic::Request<AllNodesRequest>,
+        _request: tonic::Request<AllNodesRequest>,
     ) -> std::result::Result<tonic::Response<AllNodesResponse>, tonic::Status> {
         let resp = AllNodesResponse {
             all_nodes: vec![NodeInfo {
@@ -95,7 +96,18 @@ impl pb::node_server::Node for NodeInfoServer {
                 status: 1,
             }],
         };
+        Ok(tonic::Response::new(resp))
+    }
 
+    async fn test(
+        &self,
+        request: tonic::Request<TestRequest>,
+    ) -> std::result::Result<tonic::Response<TestResponse>, tonic::Status> {
+        let req = request.into_inner();
+
+        let resp = TestResponse {
+            resp: req.echo + "_resp",
+        };
         Ok(tonic::Response::new(resp))
     }
 }

@@ -1,1 +1,2 @@
-pub(crate) mod dao_test;
+pub mod dao_test;
+pub use dao_test::*;
