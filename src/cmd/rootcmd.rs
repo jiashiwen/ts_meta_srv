@@ -151,7 +151,7 @@ fn cmd_match(matches: &ArgMatches) {
         let rt = Runtime::new().unwrap();
         rt.block_on(async { init_resources().await.unwrap() });
 
-        let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+        let (_tx, rx) = tokio::sync::oneshot::channel::<()>();
         let async_http_server = async {
             let config = get_config().unwrap();
             let bind = config.http.bind;
@@ -183,7 +183,7 @@ fn cmd_match(matches: &ArgMatches) {
                 };
 
                 let rs = server.start(addr).await.unwrap();
-                rs.await.unwrap();
+                let _ = rs.await.unwrap();
             });
         });
 

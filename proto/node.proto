@@ -1,14 +1,15 @@
 syntax = "proto3";
-package meta_service;
-option go_package = "meta";
+// package node_service;
+package meta;
+option go_package = "horae/meta";
 
 message TestRequest { string echo = 1; }
 message TestResponse { string resp = 1; }
 
 message AllNodesRequest {}
-message AllNodesResponse { repeated NodeInfo all_nodes = 1; }
+message AllNodesInfoResponse { repeated NodeInfomation all_nodes = 1; }
 
-message NodeInfo {
+message NodeInfomation {
   uint64 id = 1;
   string rpc_addr = 2;
   string http_addr = 3;
@@ -17,5 +18,5 @@ message NodeInfo {
 
 service Node {
   rpc Test(TestRequest) returns (TestResponse) {}
-  rpc AllNodesInfo(AllNodesRequest) returns (AllNodesResponse) {}
+  rpc AllNodesInfo(AllNodesRequest) returns (AllNodesInfoResponse) {}
 }

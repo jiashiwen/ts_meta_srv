@@ -1,0 +1,41 @@
+syntax = "proto3";
+package meta;
+option go_package = "horae/meta";
+
+message NodeInfo {
+  uint64 id = 1;
+  string rpc_addr = 2;
+  string http_addr = 3;
+  uint32 status = 4;
+}
+
+message BucketInfo {
+  string tenant = 1; // 租户 写死jdcloud
+  string id = 2;     // tenant+table_name+start_time+end_time hash
+  int64 start_time = 3;
+  int64 end_time = 4;
+  Table table = 5;
+  ReplicaSet replica_set = 6;
+}
+
+message Table { // 预留做扩展
+  string name = 1;
+}
+
+message ReplicaSet { repeated uint64 nodes = 1; }
+
+message CreateBucketResponse {
+  bool created = 1;
+  BucketInfo bucket_info = 2;
+}
+
+message EmptyRequest {}
+
+message AllBucketsResponse { repeated BucketInfo bucketsinfo = 1; }
+message AllNodesResponse { repeated NodeInfo nodesinfo = 1; }
+
+service MetaService {
+  rpc CreateBucketIfNotExists(BucketInfo) returns (CreateBucketResponse);
+  rpc GetAllBuckets(EmptyRequest) returns (AllBucketsResponse);
+  rpc GetAllNodes(EmptyRequest) returns (AllNodesResponse);
+}

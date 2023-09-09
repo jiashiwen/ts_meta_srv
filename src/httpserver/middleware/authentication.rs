@@ -1,10 +1,8 @@
 use axum::{
     extract::Extension,
     http::{self, Request, StatusCode},
-    middleware::{self, Next},
-    response::{IntoResponse, Response},
-    routing::get,
-    Router,
+    middleware::Next,
+    response::Response,
 };
 
 #[derive(Clone)]
