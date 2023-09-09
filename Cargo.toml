@@ -82,3 +82,7 @@ h2 = { version = "0.3" }
 
 [build-dependencies]
 tonic-build = "0.9"
+
+[[example]]
+name = "etcd_sample"
+path = "examples/etcd_sample.rs"

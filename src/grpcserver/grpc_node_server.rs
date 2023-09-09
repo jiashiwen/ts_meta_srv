@@ -7,7 +7,9 @@ pub mod ts_meta {
 use anyhow::anyhow;
 use anyhow::Result;
 use etcd_client::GetOptions;
+use etcd_client::PutOptions;
 use futures::FutureExt;
+use std::f32::consts::E;
 use std::net::SocketAddr;
 use tokio::{
     net::TcpListener,
@@ -135,6 +137,7 @@ impl ts_meta::meta_service_server::MetaService for MetaServciceServer {
         request: tonic::Request<BucketInfo>,
     ) -> std::result::Result<tonic::Response<CreateBucketResponse>, tonic::Status> {
         let bucketinfo: BucketInfo = request.into_inner();
+        let mut created = false;
         let mut key = BUCKET_ID_PREFIX.to_string();
         if bucketinfo.id.is_empty() {
             return Err(tonic::Status::data_loss("id must be set"));
@@ -144,14 +147,29 @@ impl ts_meta::meta_service_server::MetaService for MetaServciceServer {
             match GLOBAL_ETCD.get_mut() {
                 Some(etcd_client) => {
                     let value = struct_to_json_string(&bucketinfo).unwrap();
-                    etcd_client.put(key, value, None).await;
+
+                    match etcd_client
+                        .put(key, value, Some(PutOptions::new().with_prev_key()))
+                        .await
+                    {
+                        Ok(resp) => {
+                            if resp.prev_key().is_none() {
+                                created = true;
+                            }
+                        }
+                        Err(_) => {
+                            return Err(tonic::Status::data_loss("etcd error"));
+                        }
+                    };
                 }
-                None => {}
+                None => {
+                    return Err(tonic::Status::data_loss("etcd error"));
+                }
             }
         }
 
         let resp = CreateBucketResponse {
-            created: true,
+            created: created,
             bucket_info: Some(bucketinfo),
         };
         Ok(tonic::Response::new(resp))

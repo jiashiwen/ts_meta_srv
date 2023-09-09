@@ -52,7 +52,7 @@ pub async fn logout(hm: HeaderMap) -> HandlerResult<()> {
             return Err(err);
         }
         Some(val) => {
-            token_remove(val.to_str().unwrap().to_string());
+            let _ = token_remove(val.to_str().unwrap().to_string());
             Ok(Json(Response::ok(())))
         }
     }
