@@ -18,5 +18,4 @@ message NodeInfomation {
 
 service Node {
   rpc Test(TestRequest) returns (TestResponse) {}
-  rpc AllNodesInfo(AllNodesRequest) returns (AllNodesInfoResponse) {}
 }

@@ -1,7 +1,8 @@
 use crate::{
+    grpcserver::ts_meta::NodeInfo,
     httpserver::{
         exception::{AppError, AppErrorType},
-        module::{NodeInfo, Response},
+        module::Response,
     },
     service::nodes_info,
 };

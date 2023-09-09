@@ -1,6 +1,5 @@
 use crate::{
-    commons::json_to_struct,
-    httpserver::module::{NodeInfo, NODE_ID_PREFIX},
+    commons::json_to_struct, grpcserver::ts_meta::NodeInfo, httpserver::module::NODE_ID_PREFIX,
     resources::GLOBAL_ETCD,
 };
 use anyhow::Result;

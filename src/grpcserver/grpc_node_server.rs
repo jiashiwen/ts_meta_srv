@@ -4,6 +4,7 @@ pub mod ts_meta {
         tonic::include_file_descriptor_set!("service_descriptor");
 }
 
+use anyhow::anyhow;
 use anyhow::Result;
 use etcd_client::GetOptions;
 use futures::FutureExt;
@@ -17,7 +18,7 @@ use tokio::{
     task::{self, JoinHandle},
 };
 use tokio_stream::wrappers::TcpListenerStream;
-use ts_meta::{AllNodesInfoResponse, AllNodesRequest, TestRequest, TestResponse};
+use ts_meta::{TestRequest, TestResponse};
 
 use crate::{
     commons::{json_to_struct, struct_to_json_string},
@@ -26,7 +27,6 @@ use crate::{
 
 use self::ts_meta::{
     AllBucketsResponse, AllNodesResponse, BucketInfo, CreateBucketResponse, EmptyRequest,
-    NodeInfomation,
 };
 
 pub const NODE_ID_PREFIX: &'static str = "nodeid_";
@@ -97,20 +97,20 @@ pub struct NodeInfoServer {}
 
 #[tonic::async_trait]
 impl ts_meta::node_server::Node for NodeInfoServer {
-    async fn all_nodes_info(
-        &self,
-        _request: tonic::Request<AllNodesRequest>,
-    ) -> std::result::Result<tonic::Response<AllNodesInfoResponse>, tonic::Status> {
-        let resp = AllNodesInfoResponse {
-            all_nodes: vec![NodeInfomation {
-                id: 12,
-                rpc_addr: "127.0.0.1:8082".to_string(),
-                http_addr: "127.0.0.1:8080".to_string(),
-                status: 1,
-            }],
-        };
-        Ok(tonic::Response::new(resp))
-    }
+    // async fn all_nodes_info(
+    //     &self,
+    //     _request: tonic::Request<AllNodesRequest>,
+    // ) -> std::result::Result<tonic::Response<AllNodesInfoResponse>, tonic::Status> {
+    //     let resp = AllNodesInfoResponse {
+    //         all_nodes: vec![NodeInfomation {
+    //             id: 12,
+    //             rpc_addr: "127.0.0.1:8082".to_string(),
+    //             http_addr: "127.0.0.1:8080".to_string(),
+    //             status: 1,
+    //         }],
+    //     };
+    //     Ok(tonic::Response::new(resp))
+    // }
 
     async fn test(
         &self,
@@ -137,7 +137,7 @@ impl ts_meta::meta_service_server::MetaService for MetaServciceServer {
         let bucketinfo: BucketInfo = request.into_inner();
         let mut key = BUCKET_ID_PREFIX.to_string();
         if bucketinfo.id.is_empty() {
-            return Err(tonic::Status::data_loss("id not exists"));
+            return Err(tonic::Status::data_loss("id must be set"));
         }
         key.push_str(bucketinfo.id.as_str());
         unsafe {
@@ -214,4 +214,40 @@ impl ts_meta::meta_service_server::MetaService for MetaServciceServer {
         let resp = AllNodesResponse { nodesinfo };
         Ok(tonic::Response::new(resp))
     }
+}
+
+async fn all_nodes_info() -> Result<Vec<ts_meta::NodeInfo>> {
+    let mut nodesinfo: Vec<ts_meta::NodeInfo> = Vec::new();
+    unsafe {
+        match GLOBAL_ETCD.get_mut() {
+            Some(etcd_client) => {
+                match etcd_client
+                    .get(NODE_ID_PREFIX, Some(GetOptions::new().with_prefix()))
+                    .await
+                {
+                    Ok(resp) => {
+                        for kv in resp.kvs() {
+                            match String::from_utf8(kv.value().to_vec()) {
+                                Ok(vec_to_string) => {
+                                    if let Ok(nodeinfo) =
+                                        json_to_struct::<ts_meta::NodeInfo>(&vec_to_string)
+                                    {
+                                        nodesinfo.push(nodeinfo);
+                                    };
+                                }
+                                Err(_) => continue,
+                            };
+                        }
+                    }
+                    Err(e) => {
+                        return Err(anyhow!(e.to_string()));
+                    }
+                };
+            }
+            None => {
+                return Err(anyhow!("can not get etcd client"));
+            }
+        }
+    }
+    return Ok(nodesinfo);
 }
